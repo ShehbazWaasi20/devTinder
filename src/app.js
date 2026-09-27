@@ -1,15 +1,12 @@
 const express = require("express");
 const app = express();
 
-app.use("/",(req, res, next)=> {
-    // res.send("basic route created");
-    const token = "xy";
-    const isAuthorized = token === "xyz";
-    if(isAuthorized){
-      next();
-    }else{
-        res.status(401).send("user unAuthorized");
-    }
+const { userAuthorization } = require("./utils/auth");
+
+app.use("/user",userAuthorization)
+
+app.get("/login", (req, res)=> {
+    res.status(200).send("user authenticated");
 })
 
 app.get("/user",(req, res)=>{
