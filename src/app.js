@@ -1,70 +1,96 @@
 const express = require("express");
-const dbConnection = require("./utils/database")
+const dbConnection = require("./utils/database");
 const app = express();
-const User = require("./modal/user")
+const User = require("./modal/user");
 
 app.use(express.json());
 
 const { userAuthorization } = require("./utils/auth");
 
-app.use("/user",userAuthorization)
+app.use("/user", userAuthorization);
 
-app.get("/login", (req, res)=> {
-    res.status(200).send("user authenticated");
-})
-dbConnection().then(()=> {
+app.get("/login", (req, res) => {
+  res.status(200).send("user authenticated");
+});
+dbConnection()
+  .then(() => {
     console.log("DB connected successfully");
-    app.listen(3000, ()=> {
-    console.log("node server created at port 3000");
-})
-}).catch((err)=> {
-    console.log(err , "error=======")
-})
+    app.listen(3000, () => {
+      console.log("node server created at port 3000");
+    });
+  })
+  .catch((err) => {
+    console.log(err, "error=======");
+  });
 
-
-//regex 
-app.get(/^\/shehbaz(abdul)?wa+si/,(req, res)=> {
-    res.send("rex experession route");
-})
+//regex
+app.get(/^\/shehbaz(abdul)?wa+si/, (req, res) => {
+  res.send("rex experession route");
+});
 
 //dynamic route
-app.get("/:user/:password", (req, res)=> {
-    console.log(req.params);
-    res.send("user and password");
-})
+app.get("/:user/:password", (req, res) => {
+  console.log(req.params);
+  res.send("user and password");
+});
 
 //add user to data base
-app.post("/signUp",async(req, res)=> {
-    try{
-        console.log(req.body);
-        let user = new User(req.body);
-        console.log("signup successfulll" , user)
-        await user.save();
-    }catch(err){
-        console.log("err",err)
-    }
-})
+app.post("/signUp", async (req, res) => {
+  try {
+    console.log(req.body);
+    let user = new User(req.body);
+    console.log("signup successfulll", user);
+    await user.save();
+    res.send("user created sussessfully");
+  } catch (err) {
+    console.log("err", err);
+    res.status(400).send(err);
+  }
+});
 
 //GET all items from DB
-app.get("/user", async(req, res)=>{
-    try{
-        let user = await User.find({})
-        res.send(user);
-        
-    }catch(err){
-        console.log(err , "err");
-    }
+app.get("/user", async (req, res) => {
+  try {
+    let user = await User.find({});
+    res.send(user);
+  } catch (err) {
+    console.log(err, "err");
+  }
 });
 
-//GET specific items for DB 
-app.get("/item", async(req, res)=>{
-    const userName = req.body.userName;;
-    console.log(req.body, "body");
-    try{
-        let user = await User.find({userName : userName})
-        //findOne return first available item from DB
-        res.send(user);
-    }catch(err){
-        console.log(err , "err");
-    }
+//GET specific items for DB
+app.get("/item", async (req, res) => {
+  const userName = req.body.userName;
+  console.log(req.body, "body");
+  try {
+    let user = await User.find({ userName: userName });
+    //findOne return first available item from DB
+    res.send(user);
+  } catch (err) {
+    console.log(err, "err");
+  }
 });
+
+//delete item from DB
+//{  "mobile": 789 } json raw data  pass mobile no in delete api http://localhost:3000/item
+app.delete("/item", async (req, res) => {
+  try {
+    await User.findOneAndDelete({ mobile: req.body.mobile });
+    res.send("user delete");
+  } catch (err) {
+    console.log(err, "error");
+  }
+});
+
+app.patch("/item", async(req, res)=> {
+    try{
+        const id = req.body.userId;
+        const data = req.body;
+        console.log(data);
+        let update = await User.findByIdAndUpdate(id , data)
+        console.log(update, "update");
+        res.send("user updated");   
+    }catch(err){
+        console.log(err , "error");
+    }
+})
